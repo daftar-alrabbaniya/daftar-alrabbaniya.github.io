@@ -364,14 +364,17 @@ function openBook(){
     vis.forEach(e=>{const r=e.getBoundingClientRect(),a=tb-r.top,b=a+T,d=bl-r.top,c=d-B;
       if(b>0||c<r.height){e.style.setProperty('--a',a+'px');e.style.setProperty('--b',b+'px');e.style.setProperty('--c',c+'px');e.style.setProperty('--d',d+'px');e.classList.add('fz')}else e.classList.remove('fz')});
     /* keep one card in focus: the one being written in, else the one in the middle */
-    const ae=document.activeElement;let cur=ae&&ae.tagName==='TEXTAREA'?ae.closest('.item'):null;
-    if(!cur){const mid=(Math.max(tb,0)+bl)/2;let bd=1e9;vis.forEach(e=>{if(!e.classList.contains('item'))return;const r=e.getBoundingClientRect(),d=(r.top<=mid&&r.bottom>=mid)?0:Math.min(Math.abs(r.top-mid),Math.abs(r.bottom-mid));if(d<bd){bd=d;cur=e}})}
+    /* the card in the middle of what she can see is clear; the one she is typing in stays clear only while it is on screen */
+    const vv=window.visualViewport,vb=Math.min(bl,vv?vv.height+vv.offsetTop:bl),top=Math.max(tb,0);
+    const ae=document.activeElement;let cur=null;
+    if(ae&&ae.tagName==='TEXTAREA'){const it=ae.closest('.item'),r=it&&it.getBoundingClientRect();if(r&&r.bottom>top+60&&r.top<vb-60)cur=it}
+    if(!cur){const mid=(top+vb)/2;let bd=1e9;vis.forEach(e=>{if(!e.classList.contains('item'))return;const r=e.getBoundingClientRect(),d=(r.top<=mid&&r.bottom>=mid)?0:Math.min(Math.abs(r.top-mid),Math.abs(r.bottom-mid));if(d<bd){bd=d;cur=e}})}
     if(cur!==curEl){curEl&&curEl.classList.remove('cur');cur&&cur.classList.add('cur');curEl=cur}
     $('#main').classList.toggle('foc',!!cur&&!$('.tools').classList.contains('big'))};
   const fadeEls=[...document.querySelectorAll('#main .item,#main .book,#main .actions')],vis=new Set();
   const vio=new IntersectionObserver(es=>{es.forEach(en=>en.isIntersecting?vis.add(en.target):(vis.delete(en.target),en.target.classList.remove('fz')));fade()});
   fadeEls.forEach(e=>vio.observe(e));
-  addEventListener('scroll',()=>{if(!fq)fq=requestAnimationFrame(fade)},{passive:true});addEventListener('resize',fade);setTimeout(fade,100);
+  addEventListener('scroll',()=>{if(!fq)fq=requestAnimationFrame(fade)},{passive:true});addEventListener('resize',fade);window.visualViewport&&visualViewport.addEventListener('resize',fade);setTimeout(fade,100);
 
   /* highlight the chip of the book in view */
   const io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){const b=en.target.dataset.b;document.querySelectorAll('.chip').forEach(c=>{const on=c.dataset.b===b;if(on&&!c.classList.contains('on')){const bar=c.parentElement;bar.scrollTo({left:c.offsetLeft-bar.clientWidth/2+c.clientWidth/2,behavior:'smooth'})}c.classList.toggle('on',on)})}}),{rootMargin:'-45% 0px -50% 0px'});
@@ -412,9 +415,9 @@ function makePDF(only){
   out.forEach(e=>{e.__ph=document.createComment('');e.replaceWith(e.__ph)});
   const fit=()=>pr.style.setProperty('--z',Math.min(1,(innerWidth-16)/793.7).toFixed(4));fit();addEventListener('resize',fit);
   pr.classList.add('show');scrollTo(0,0);
-  let open=true;try{history.pushState({pv:1},'')}catch(e){}
+  let open=true;try{history.scrollRestoration='manual';history.pushState({pv:1},'')}catch(e){}
   const close=fromPop=>{if(!open)return;open=false;removeEventListener('popstate',onPop);removeEventListener('resize',fit);
-    out.forEach(e=>e.__ph.replaceWith(e));pr.classList.remove('show');pr.innerHTML='';document.title=old;scrollTo(0,y);
+    out.forEach(e=>{e.querySelectorAll&&e.querySelectorAll('.enter').forEach(x=>x.classList.remove('enter'));e.classList&&e.classList.remove('enter');e.__ph.replaceWith(e)});pr.classList.remove('show');pr.innerHTML='';document.title=old;scrollTo(0,y);requestAnimationFrame(()=>scrollTo(0,y));setTimeout(()=>scrollTo(0,y),60);
     if(!fromPop){try{if(history.state&&history.state.pv)history.back()}catch(e){}}};
   const onPop=()=>close(true);addEventListener('popstate',onPop);
   pr.querySelector('.bk').onclick=()=>close(false);
