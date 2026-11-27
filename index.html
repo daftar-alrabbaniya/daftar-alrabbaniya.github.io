@@ -353,10 +353,10 @@ function makePDF(only){
     const y=scrollY,pr=$('#print'),out=[...document.body.children].filter(e=>e!==pr&&e.tagName!=='SCRIPT');
     const ph=document.createComment('p');out.forEach(e=>{e.__ph=document.createComment('');e.replaceWith(e.__ph)});
     pr.style.display='block';let done=false;
-    const back=()=>{if(done)return;done=true;out.forEach(e=>e.__ph.replaceWith(e));pr.style.display='';pr.innerHTML='';document.title=old;scrollTo(0,y);removeEventListener('afterprint',back);removeEventListener('pointerdown',back,true)};
-    addEventListener('afterprint',back);
+    const back=()=>{if(done)return;done=true;out.forEach(e=>e.__ph.replaceWith(e));pr.style.display='';document.title=old;scrollTo(0,y);removeEventListener('afterprint',back);removeEventListener('pointerdown',back,true);removeEventListener('touchstart',back,true)};
+    if(!ios)addEventListener('afterprint',back);
     window.print();
-    setTimeout(()=>addEventListener('pointerdown',back,true),400);
+    setTimeout(()=>{addEventListener('pointerdown',back,true);addEventListener('touchstart',back,true)},800);
   },ios?2200:300);
 }
 start();
