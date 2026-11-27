@@ -99,10 +99,11 @@ h2{font:800 24px/1.4 Tajawal,sans-serif;margin:0 0 6px}
 .sm svg{width:16px;height:16px}
 .has .ih h3::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--rose);margin-inline-end:8px;vertical-align:middle}
 .empty{text-align:center;color:var(--muted);padding:30px 0}
-.lqb{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:25;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font:800 15.5px Tajawal,sans-serif;color:#fff;background:linear-gradient(160deg,#cf777a,#b85d62);border:0;border-radius:999px;padding:12px 22px;box-shadow:0 10px 24px -10px rgba(120,40,45,.6),inset 0 1px 0 rgba(255,255,255,.25);cursor:pointer;transition:transform .3s,opacity .3s}
+.lqb{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:25;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font:800 15.5px Tajawal,sans-serif;color:#3f4a26;background:linear-gradient(160deg,#dfe5c3,#c6cf9f);border:1px solid rgba(135,146,90,.45);border-radius:999px;padding:12px 22px;box-shadow:0 10px 24px -12px rgba(80,95,45,.55),inset 0 1px 0 rgba(255,255,255,.6);cursor:pointer;transition:transform .3s,opacity .3s}
 .lqb[hidden]{display:none}
+.fz{-webkit-mask-image:linear-gradient(to bottom,transparent var(--ct),#000 calc(var(--ct) + min(56px,var(--ct))),#000 calc(100% - var(--cb) - min(56px,var(--cb))),transparent calc(100% - var(--cb)));mask-image:linear-gradient(to bottom,transparent var(--ct),#000 calc(var(--ct) + min(56px,var(--ct))),#000 calc(100% - var(--cb) - min(56px,var(--cb))),transparent calc(100% - var(--cb)))}
 .lqb svg{width:18px;height:18px}
-.lqb b{font:700 12px Tajawal,sans-serif;background:rgba(255,255,255,.22);padding:1px 9px;border-radius:999px}
+.lqb b{font:700 12px Tajawal,sans-serif;background:rgba(255,255,255,.55);padding:1px 9px;border-radius:999px}
 body.closed .lqb{display:none}
 .wrap{padding-bottom:70px}
 .actions{display:grid;gap:10px;justify-items:center;margin:30px 0 10px}
@@ -121,7 +122,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;bac
 /* ---------- cover ---------- */
 body.closed .foot{display:none}
 .bar,.hero{display:none}
-.stage{min-height:100svh;display:grid;place-items:center;padding:5vh 0 4vh;overflow:hidden;width:100%;max-width:100vw;position:relative}
+.stage{min-height:100svh;display:grid;place-items:center;padding:5vh 0 4vh;overflow:hidden;width:100vw;margin-inline:calc(50% - 50vw);position:relative}
 html{overflow-x:hidden}
 .nbw{display:grid;justify-items:center;gap:26px;transition:opacity .8s ease,transform 1s cubic-bezier(.4,0,.2,1),filter .8s ease}
 .nbw.leave{opacity:0;transform:scale(1.06) translateY(-8px);filter:blur(6px)}
@@ -150,7 +151,7 @@ html{overflow-x:hidden}
 .cv .auth::before,.cv .auth::after{content:"";position:absolute;width:6px;height:6px;border-radius:50%;background:#fbf3ea}
 .cv .auth::before{right:-3.5px;top:-5px}.cv .auth::after{left:-3.5px;bottom:-5px}
 .cv .foot1{position:absolute;bottom:22px;left:0;right:0;display:grid;justify-items:center;gap:6px}
-.cv .clogo{position:absolute;top:20px;left:22px;width:17px;height:26px;background:#fbf3ea;opacity:.88}
+.cv .clogo{position:absolute;top:18px;left:20px;width:24px;height:36px;background:#fbf3ea;opacity:.88}
 .cv .foot1 small{font:600 11px Tajawal,sans-serif;opacity:.8}
 .cv .owner{font:700 12.5px Tajawal,sans-serif;opacity:.95;min-height:1.2em}
 .nmf{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
@@ -255,7 +256,7 @@ function start(){
      <div class="clogo logo" aria-hidden="true"></div><div class="foot1"><span class="owner" id="own"></span><small>شرح أستاذة سمر الصالح</small></div>
    </div></div></div><div class="ribbon"></div></div>
    <div class="nmf"><input id="nm" maxlength="30" placeholder="اكتبي اسمك" autocomplete="off" aria-label="اسمك"><button class="btn" id="go">افتحي الدفتر</button></div>
-   <p class="muted" style="margin:0;font-size:14px;text-align:center;max-width:300px">تحت كل فقرة من الكتاب مكان تكتبين فيه شرح الأستاذة، ويُحفظ تلقائياً على جهازك</p></div></section>`;
+   <p class="muted" style="margin:0;font-size:14px;text-align:center;max-width:300px">تحت كل فقرة من الكتاب مكان تكتبين فيه شرح الأستاذة، ويمكنك حفظه على جهازك</p></div></section>`;
   $('#nm').oninput=e=>{$('#own').textContent=own(e.target.value.trim()).replace(/&amp;/g,'&')};
   $('#go').onclick=()=>{CUR=$('#nm').value.trim();
     $('#go').disabled=true;
@@ -270,7 +271,7 @@ function start(){
 
 function openBook(){
   const books=DATA.map(([b],i)=>[b||'المقدمة',i]);
-  let h=`<div class="tools"><div class="th"><span class="ttl"><i></i>ابحثي في الدفتر</span><span class="prog" id="prog"></span></div><div class="srch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6"/></svg><input id="q" type="search" placeholder="اكتبي عنواناً أو رقم صفحة" aria-label="بحث"></div>
+  let h=`<div class="tools"><div class="th"><span class="ttl"><i></i>ابحثي في الدفتر:</span><span class="prog" id="prog"></span></div><div class="srch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6"/></svg><input id="q" type="search" placeholder="اكتبي عنواناً أو رقم صفحة" aria-label="بحث"></div>
   <div class="chips">${books.map(([b,i])=>`<button class="chip" data-b="${i}">${b}</button>`).join('')}</div></div>`;
   DATA.forEach(([book,items],b)=>{
     h+=`<div class="book" id="b${b}">${book?`<small>كتاب</small><h2>${book}</h2>`:''}</div>`;
@@ -308,6 +309,15 @@ function openBook(){
     if(e.target.id==='last'){const id=localStorage.getItem(LK);const el=document.getElementById('i'+id);if(el){el.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>$('#t'+id).focus({preventScroll:true}),500)}}
   });
   $('#q').addEventListener('input',e=>filter(e.target.value));
+  /* fade cards as they slide under the search bar and behind the save button */
+  let fq=0;const fade=()=>{fq=0;const tb=$('.tools').getBoundingClientRect().bottom-6,lb=$('#lq'),bl=(lb&&!lb.hidden)?lb.getBoundingClientRect().top-10:innerHeight-6;
+    vis.forEach(e=>{const r=e.getBoundingClientRect(),ct=Math.max(0,tb-r.top),cb=Math.max(0,r.bottom-bl);
+      if(ct>0||cb>0){e.style.setProperty('--ct',ct+'px');e.style.setProperty('--cb',cb+'px');e.classList.add('fz')}else e.classList.remove('fz')})};
+  const fadeEls=[...document.querySelectorAll('#main .item,#main .book,#main .actions')],vis=new Set();
+  const vio=new IntersectionObserver(es=>{es.forEach(en=>en.isIntersecting?vis.add(en.target):(vis.delete(en.target),en.target.classList.remove('fz')));fade()});
+  fadeEls.forEach(e=>vio.observe(e));
+  addEventListener('scroll',()=>{if(!fq)fq=requestAnimationFrame(fade)},{passive:true});addEventListener('resize',fade);setTimeout(fade,100);
+
   /* highlight the chip of the book in view */
   const io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){const b=en.target.dataset.b;document.querySelectorAll('.chip').forEach(c=>{const on=c.dataset.b===b;if(on&&!c.classList.contains('on')){const bar=c.parentElement;bar.scrollTo({left:c.offsetLeft-bar.clientWidth/2+c.clientWidth/2,behavior:'smooth'})}c.classList.toggle('on',on)})}}),{rootMargin:'-45% 0px -50% 0px'});
   document.querySelectorAll('.item').forEach(i=>io.observe(i));
