@@ -168,7 +168,10 @@ html{overflow-x:hidden}
  body::before{display:none}
  body>*:not(#print){display:none!important}
  #print{display:block;-webkit-print-color-adjust:exact;print-color-adjust:exact;color:#38472f;font-family:Tajawal,sans-serif}
- .pbg{position:fixed;inset:0;background-color:#f5f1e8;background-image:radial-gradient(80% 50% at 85% 100%,rgba(135,146,90,.12),transparent 70%),radial-gradient(70% 45% at 10% 0%,rgba(201,102,107,.08),transparent 70%);z-index:0}
+ .pbg{position:fixed;inset:0;background:#f5f1e8;z-index:0}
+  #print *{background-image:none!important}
+  #print.ios .pc{height:250mm}
+  #print.ios .pc .cfoot{bottom:4mm}
  .pc,.pp{position:relative;z-index:1}
  .pc{height:297mm;break-after:page;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 22mm}
  .pc .logo{position:absolute;top:16mm;right:18mm;width:40px;height:60px}
@@ -348,6 +351,7 @@ function makePDF(only){
   $('#print').innerHTML=h;
   const old=document.title;document.title=one?('شرح لقاء '+day+' – الطريق إلى الربانية'):('شرح الطريق إلى الربانية'+(nm?' – '+nm:''));
   const ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  $('#print').classList.toggle('ios',ios);
   if(ios)toast('في الصفحة الجاية: اضغطي أيقونة المشاركة ⬆︎ ثم «حفظ في الملفات»');
   setTimeout(()=>{
     const y=scrollY,pr=$('#print'),out=[...document.body.children].filter(e=>e!==pr&&e.tagName!=='SCRIPT');
