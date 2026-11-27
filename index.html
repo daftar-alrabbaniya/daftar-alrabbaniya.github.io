@@ -101,7 +101,7 @@ h2{font:800 24px/1.4 Tajawal,sans-serif;margin:0 0 6px}
 .empty{text-align:center;color:var(--muted);padding:30px 0}
 .lqb{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:25;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font:800 15.5px Tajawal,sans-serif;color:#3f4a26;background:linear-gradient(160deg,#dfe5c3,#c6cf9f);border:1px solid rgba(135,146,90,.45);border-radius:999px;padding:12px 22px;box-shadow:0 10px 24px -12px rgba(80,95,45,.55),inset 0 1px 0 rgba(255,255,255,.6);cursor:pointer;transition:transform .3s,opacity .3s}
 .lqb[hidden]{display:none}
-.fz{-webkit-mask-image:linear-gradient(to bottom,transparent var(--ct),#000 calc(var(--ct) + min(56px,var(--ct))),#000 calc(100% - var(--cb) - min(56px,var(--cb))),transparent calc(100% - var(--cb)));mask-image:linear-gradient(to bottom,transparent var(--ct),#000 calc(var(--ct) + min(56px,var(--ct))),#000 calc(100% - var(--cb) - min(56px,var(--cb))),transparent calc(100% - var(--cb)))}
+.fz{-webkit-mask-image:linear-gradient(to bottom,transparent var(--a),#000 var(--b),#000 var(--c),transparent var(--d));mask-image:linear-gradient(to bottom,transparent var(--a),#000 var(--b),#000 var(--c),transparent var(--d))}
 .lqb svg{width:18px;height:18px}
 .lqb b{font:700 12px Tajawal,sans-serif;background:rgba(255,255,255,.55);padding:1px 9px;border-radius:999px}
 body.closed .lqb{display:none}
@@ -109,6 +109,20 @@ body.closed .lqb{display:none}
 .actions{display:grid;gap:10px;justify-items:center;margin:30px 0 10px}
 .actions .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .ghost{font:800 15px Tajawal,sans-serif;min-height:44px;padding:8px 20px;border-radius:999px;border:1.5px solid var(--rose);background:transparent;color:var(--rose);cursor:pointer}
+.tools{transition:margin .55s cubic-bezier(.4,0,.2,1),padding .55s cubic-bezier(.4,0,.2,1)}
+.tools .th,.tools .srch input,.tools .srch svg,.tools .chip{transition:all .55s cubic-bezier(.4,0,.2,1)}
+.tools.big{margin-top:16vh;padding:24px 20px 20px}
+.tools.big .th{font-size:17px;margin-bottom:14px}
+.tools.big .srch input{font-size:18.5px;padding:18px 50px 18px 16px;border-radius:17px}
+.tools.big .srch svg{width:23px;height:23px;right:16px}
+.tools.big .chips{padding-top:14px}
+.tools.big .chip{font-size:14.5px;padding:7px 15px}
+/* optical centring: Tajawal sits high in its line box, so nudge text down/sideways to the true centre */
+.btn{padding:13px 26px 9px 30px}
+.lqb{padding:14px 25px 10px 18px}
+.lqb b{padding:5px 9px 1px}
+.pg{padding:4px 10px 1px}
+.prog{padding:3px 10px 0}
 .foot{color:var(--muted);font-size:13px;text-align:center;padding:10px 0 28px}
 .copy{display:inline-block;margin-top:6px;font-weight:700;color:var(--rose)}
 .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(160px);background:var(--ink);color:var(--paper);font-weight:700;font-size:15px;padding:8px 18px;border-radius:999px;transition:transform .3s;z-index:30}
@@ -291,7 +305,7 @@ function openBook(){
   <div class="actions"><div class="row"><button class="ghost" id="pdf">حفظ كل الشرح في ملف PDF واحد</button><button class="ghost" id="last" hidden>آخر فقرة كتبتِ فيها</button></div>
   <p class="muted" style="font-size:14px;margin:4px 0 0;text-align:center;max-width:520px">بعد كل لقاء اضغطي «حفظ شرح هذا اللقاء» تحت الشاشة، فيحفظ كل الفقرات اللي كتبتِ فيها من آخر حفظ في ملف PDF واحد بمقاس A4 جاهز للطباعة.<br>في الآيفون: اضغطي الزر ثم أيقونة المشاركة ← «حفظ في الملفات». في الأندرويد والكمبيوتر: اختاري «حفظ بتنسيق PDF».</p></div>`;
   $('#main').innerHTML=h;
-  if(!$('#lq')){const lb=document.createElement('button');lb.className='lqb';lb.id='lq';lb.hidden=true;lb.innerHTML=PDFI+'حفظ شرح هذا اللقاء <b></b>';lb.onclick=()=>{const {ids}=lqIds();if(!ids.length){toast('اكتبي الشرح أولاً');return}makePDF(ids);SV={at:Date.now(),ids};try{localStorage.setItem(SK,JSON.stringify(SV))}catch(e){}setTimeout(lqUpd,1500)};document.body.appendChild(lb)}
+  if(!$('#lq')){const lb=document.createElement('button');lb.className='lqb';lb.id='lq';lb.hidden=true;lb.innerHTML=PDFI+'حفظ شرح هذا اللقاء<b></b>';lb.onclick=()=>{const {ids}=lqIds();if(!ids.length){toast('اكتبي الشرح أولاً');return}makePDF(ids);SV={at:Date.now(),ids};try{localStorage.setItem(SK,JSON.stringify(SV))}catch(e){}setTimeout(lqUpd,1500)};document.body.appendChild(lb)}
   lqUpd();
   document.querySelectorAll('.note textarea').forEach(grow);
   count();
@@ -314,10 +328,15 @@ function openBook(){
     if(e.target.id==='last'){const id=localStorage.getItem(LK);const el=document.getElementById('i'+id);if(el){el.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>$('#t'+id).focus({preventScroll:true}),500)}}
   });
   $('#q').addEventListener('input',e=>filter(e.target.value));
+  /* search bar starts large, then shrinks and rises once she starts */
+  const tl=$('.tools');tl.classList.add('big');scrollTo(0,0);
+  const small=()=>{if(!tl.classList.contains('big'))return;tl.classList.remove('big');setTimeout(()=>fade&&fade(),600)};
+  addEventListener('scroll',()=>{if(scrollY>8)small()},{passive:true});$('#q').addEventListener('focus',small);
+  $('#main').addEventListener('focusin',e=>{if(e.target.tagName==='TEXTAREA')small()});
   /* fade cards as they slide under the search bar and behind the save button */
-  let fq=0;const fade=()=>{fq=0;const tb=$('.tools').getBoundingClientRect().bottom-6,lb=$('#lq'),bl=(lb&&!lb.hidden)?lb.getBoundingClientRect().top-10:innerHeight-6;
-    vis.forEach(e=>{const r=e.getBoundingClientRect(),ct=Math.max(0,tb-r.top),cb=Math.max(0,r.bottom-bl);
-      if(ct>0||cb>0){e.style.setProperty('--ct',ct+'px');e.style.setProperty('--cb',cb+'px');e.classList.add('fz')}else e.classList.remove('fz')})};
+  let fq=0;const T=150,B=130;const fade=()=>{fq=0;const tb=$('.tools').getBoundingClientRect().bottom-10,lb=$('#lq'),bl=(lb&&!lb.hidden)?lb.getBoundingClientRect().top-6:innerHeight;
+    vis.forEach(e=>{const r=e.getBoundingClientRect(),a=tb-r.top,b=a+T,d=bl-r.top,c=d-B;
+      if(b>0||c<r.height){e.style.setProperty('--a',a+'px');e.style.setProperty('--b',b+'px');e.style.setProperty('--c',c+'px');e.style.setProperty('--d',d+'px');e.classList.add('fz')}else e.classList.remove('fz')})};
   const fadeEls=[...document.querySelectorAll('#main .item,#main .book,#main .actions')],vis=new Set();
   const vio=new IntersectionObserver(es=>{es.forEach(en=>en.isIntersecting?vis.add(en.target):(vis.delete(en.target),en.target.classList.remove('fz')));fade()});
   fadeEls.forEach(e=>vio.observe(e));
