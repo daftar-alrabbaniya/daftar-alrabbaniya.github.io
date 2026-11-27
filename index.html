@@ -99,7 +99,7 @@ h2{font:800 24px/1.4 Tajawal,sans-serif;margin:0 0 6px}
 .sm svg{width:16px;height:16px}
 .has .ih h3::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--rose);margin-inline-end:8px;vertical-align:middle}
 .empty{text-align:center;color:var(--muted);padding:30px 0}
-.lqb{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:25;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font:800 15.5px Tajawal,sans-serif;color:#fff;background:linear-gradient(160deg,#cf777a,#b85d62);border:0;border-radius:999px;padding:12px 22px;box-shadow:0 10px 24px -10px rgba(120,40,45,.6),inset 0 1px 0 rgba(255,255,255,.25);cursor:pointer;transition:transform .3s,opacity .3s}
+.lqb{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:25;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font:800 15.5px Tajawal,sans-serif;color:#fff;background:linear-gradient(160deg,#cf777a,#b85d62);border:0;border-radius:999px;padding:12px 22px;box-shadow:0 10px 24px -10px rgba(120,40,45,.6),inset 0 1px 0 rgba(255,255,255,.25);cursor:pointer;transition:transform .3s,opacity .3s}
 .lqb[hidden]{display:none}
 .lqb svg{width:18px;height:18px}
 .lqb b{font:700 12px Tajawal,sans-serif;background:rgba(255,255,255,.22);padding:1px 9px;border-radius:999px}
@@ -127,7 +127,7 @@ html{overflow-x:hidden}
 .nbw.leave{opacity:0;transform:scale(1.06) translateY(-8px);filter:blur(6px)}
 .nb{position:relative;width:min(310px,78vw);aspect-ratio:5/7;perspective:2200px;transition:transform 1.4s cubic-bezier(.65,0,.35,1)}
 .nb.open{transform:translateX(-50%)}
-@media (max-width:680px){.nb.open{transform:none}.nb.open .cover{opacity:0}}
+@media (max-width:680px){.nb.open{transform:none}}
 /* page block (visible on the open side and bottom) */
 .nb .block{position:absolute;inset:5px 6px 2px 3px;border-radius:4px 12px 12px 4px;background:#f6f0e6;background-image:var(--grain),repeating-linear-gradient(90deg,transparent 0 2px,rgba(90,70,60,.07) 2px 3px);
   box-shadow:0 1px 0 #e9e0d1,0 2px 0 #f4eee4,0 3px 0 #e6dccb,0 34px 60px -28px rgba(80,40,40,.55),0 10px 22px -14px rgba(80,40,40,.35)}
@@ -135,8 +135,8 @@ html{overflow-x:hidden}
   display:grid;place-items:center;text-align:center;color:#87925a;font:700 15px/24px Tajawal,sans-serif}
 .nb .page1 span{opacity:0;transition:opacity .6s .5s}
 .nb.open .page1 span{opacity:1;transition-delay:1s}
-.cover{position:absolute;inset:0;transform-origin:right center;transform-style:preserve-3d;transition:transform 1.8s cubic-bezier(.6,0,.3,1),opacity .9s ease .8s}
-.nb.open .cover{transform:rotateY(178deg)}
+.cover{position:absolute;inset:0;transform-origin:right center;transform-style:preserve-3d;transition:transform 1.8s cubic-bezier(.6,0,.3,1)}
+.nb.open .cover{transform:rotateY(180deg)}
 .face{position:absolute;inset:0;border-radius:4px 14px 14px 4px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
 .front{background-color:#c4686c;background-image:var(--linen),radial-gradient(130% 90% at 20% 0%,rgba(255,255,255,.18),transparent 55%),linear-gradient(160deg,#cf777a,#b85d62);
   box-shadow:inset -14px 0 0 -12px rgba(255,255,255,.25),inset -18px 0 22px -16px rgba(60,20,20,.45),inset 0 0 0 1px rgba(120,40,45,.25)}
@@ -227,7 +227,7 @@ const PDFI='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0
 const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 document.getElementById('pines').innerHTML=[[60,90,1],[150,40,1.25],[235,110,.95]].map(([x,y,s])=>{
   let t='';for(let k=0;k<7;k++){const w=(14+k*9)*s,yy=y+k*30*s;t+=`<path d="M${x} ${yy-10*s} L${x+w} ${yy+40*s} L${x-w} ${yy+40*s}Z"/>`}
-  return `<g fill="#7f8f62">${t}<rect x="${x-4}" y="${y+240*s}" width="8" height="${60*s}"/></g>`}).join('');
+  return `<g fill="#7f8f62">${t}<rect x="${x-4*s}" y="${y+212*s}" width="${8*s}" height="${70*s}"/></g>`}).join('');
 
 /* gentle clouds (same as the quiz) */
 const cloudShape=c=>`<svg viewBox="0 0 220 90"><g fill="${c}"><ellipse cx="70" cy="58" rx="58" ry="26"/><ellipse cx="118" cy="44" rx="50" ry="36"/><ellipse cx="165" cy="60" rx="46" ry="24"/><rect x="30" y="58" width="170" height="26" rx="13"/></g></svg>`;
