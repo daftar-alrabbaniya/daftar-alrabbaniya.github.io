@@ -388,7 +388,9 @@ function openBook(){
   hc.addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;small();const o=tl.querySelector('.chip[data-b="'+c.dataset.b+'"]');setTimeout(()=>o&&o.click(),350)});
   const hold=e=>{if(heroOn){if(e.cancelable)e.preventDefault();if(document.activeElement!==hq)small()}else if(Date.now()<lockT&&e.cancelable)e.preventDefault()};
   addEventListener('wheel',hold,{passive:false});addEventListener('touchmove',hold,{passive:false});
-  addEventListener('scroll',()=>{if(scrollY>8)small()},{passive:true});
+  /* iPhone scrolls the page itself when the keyboard opens or closes: ignore that scroll so the big card stays while she types */
+  let kbT=0;hq.addEventListener('focus',()=>{kbT=Date.now()+900});hq.addEventListener('blur',()=>{kbT=Date.now()+900});
+  addEventListener('scroll',()=>{if(scrollY>8&&document.activeElement!==hq&&Date.now()>kbT)small()},{passive:true});
   $('#main').addEventListener('focusin',e=>{if(e.target.tagName==='TEXTAREA'){setTimeout(fade,30)}});$('#main').addEventListener('focusout',()=>setTimeout(fade,30));
   /* fade cards as they slide under the search bar and behind the save button */
   let fq=0,curEl=null;const T=150,B=130;const fade=()=>{fq=0;if(!$('.tools'))return;const tb=$('.tools').getBoundingClientRect().bottom-10,lb=$('#lq'),bl=(lb&&!lb.hidden)?lb.getBoundingClientRect().top-6:innerHeight;
