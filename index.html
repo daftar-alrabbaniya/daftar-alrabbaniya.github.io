@@ -84,8 +84,9 @@ h2{font:800 24px/1.4 Tajawal,sans-serif;margin:0 0 6px}
 .book h2{font:800 clamp(26px,6.4vw,34px)/1.35 Tajawal,sans-serif;color:var(--rose);margin:0}
 .item{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px clamp(16px,4vw,26px) 16px;margin:0 0 46px;box-shadow:0 18px 36px -26px rgba(110,70,60,.4)}
 .item.hide{display:none}
-#main .item,#main .book{transition:opacity .3s ease-out,transform .45s ease,box-shadow .45s ease,border-color .45s ease}
-#main .item.cur{transform:translateY(-2px);border-color:color-mix(in srgb,var(--rose) 40%,var(--line));box-shadow:0 26px 50px -24px rgba(150,60,65,.55)}
+#main.reveal .item,#main.reveal .book{transition-duration:.9s;transition-delay:.55s}
+#main .item,#main .book{transition:opacity .4s ease-out,border-color .45s ease}
+#main .item.cur{border-color:color-mix(in srgb,var(--rose) 40%,var(--line));box-shadow:0 26px 50px -24px rgba(150,60,65,.55)}
 #main .item.hit{border-color:var(--rose);box-shadow:0 0 0 3px color-mix(in srgb,var(--rose) 20%,transparent),0 22px 44px -24px rgba(150,60,65,.5)}
 mark.m{background:color-mix(in srgb,var(--rose) 24%,transparent);color:inherit;border-radius:5px;padding:0 2px}
 .ih{display:flex;align-items:baseline;gap:12px;justify-content:space-between}
@@ -113,16 +114,21 @@ body.closed .lqb{display:none}
 .actions{display:grid;gap:10px;justify-items:center;margin:30px 0 10px}
 .actions .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .ghost{font:800 15px Tajawal,sans-serif;min-height:44px;padding:8px 20px;border-radius:999px;border:1.5px solid var(--rose);background:transparent;color:var(--rose);cursor:pointer}
-.tools .th,.tools .srch input,.tools .srch svg,.tools .chip,.tools .chips{transition:font-size .7s cubic-bezier(.22,.8,.24,1),padding .7s cubic-bezier(.22,.8,.24,1),margin .7s cubic-bezier(.22,.8,.24,1),width .7s cubic-bezier(.22,.8,.24,1),height .7s cubic-bezier(.22,.8,.24,1),border-radius .7s}
-.tools.big{margin-top:calc(50svh - 190px);margin-bottom:42vh;padding:30px 22px 24px;transform:scale(1.02);box-shadow:0 40px 80px -30px rgba(120,50,55,.55),0 0 0 9999px rgba(245,241,232,0)}
+
+.tools.big{padding:30px 22px 24px;box-shadow:0 40px 80px -30px rgba(120,50,55,.55)}
 .tools.big .th{font-size:20px;margin-bottom:18px}
 .tools.big .srch input{font-size:20px;padding:22px 54px 22px 18px;border-radius:18px}
 .tools.big .srch svg{width:26px;height:26px;right:18px}
 .tools.big .chips{padding-top:18px;flex-wrap:wrap;justify-content:center;overflow:visible}
 .tools.big .chip{font-size:15.5px;padding:9px 16px 7px}
-.tools{transition:margin .7s cubic-bezier(.22,.8,.24,1),padding .7s cubic-bezier(.22,.8,.24,1),transform .7s cubic-bezier(.22,.8,.24,1),box-shadow .7s ease;will-change:margin,transform}
-#main .tools~*{transition:opacity .6s ease .15s}
-.tools.big~*{opacity:0!important;pointer-events:none}
+#hero{position:fixed;inset:0;z-index:30;display:grid;place-items:center;pointer-events:none}
+#hero .tools{position:relative;top:0;margin:0;pointer-events:auto;transform-origin:50% 50%;transition:transform .8s cubic-bezier(.4,0,.2,1),opacity .75s cubic-bezier(.4,0,.2,1);animation:heroIn .9s cubic-bezier(.22,.8,.24,1) both}
+@keyframes heroIn{from{opacity:0;transform:translateY(26px) scale(.97)}}
+#main .tools{transition:opacity .9s cubic-bezier(.4,0,.2,1) .45s}
+body.intro #main{visibility:hidden}
+body.intro #main .tools{opacity:0}
+body.intro .lqb{opacity:0;pointer-events:none}
+
 /* optical centring: Tajawal sits high in its line box, so nudge text down/sideways to the true centre */
 .btn{padding:13px 26px 9px 30px}
 .lqb{padding:14px 25px 10px 18px}
@@ -181,12 +187,13 @@ html{overflow-x:hidden}
 @keyframes enter{from{opacity:0;transform:translateY(24px) scale(.985)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.cover,.nb,.nbw{transition:none}.enter{animation:none}}
 /* ---------- print / PDF ---------- */
-@page{size:A4;margin:0}
-#print .pbg{position:fixed;inset:0;background:#f5f1e8;z-index:0}
+@page{size:A4;margin:13mm 0 12mm}
+@page :first{margin:0}
+#print .pbg{position:absolute;inset:0;background:#f5f1e8;z-index:-1}
 #print .pv *{background-image:none!important}
 #print .pbg img{display:block;width:100%;height:100%;object-fit:cover}
 #print .pc,#print .pp{position:relative;z-index:1}
-#print .pc{height:297mm;break-after:page;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 22mm}
+#print .pc{height:297mm;break-after:page;position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 22mm}
 #print .pc .logo{position:absolute;top:16mm;right:18mm;width:40px;height:60px}
 #print .pc .kick{font-weight:800;font-size:13pt;color:#87925a;margin:0 0 6mm}
 #print .pc .titleimg svg{width:95mm}
@@ -200,12 +207,13 @@ html{overflow-x:hidden}
 #print .pc .who{margin-top:3mm;font-weight:800;color:#5f6a34;font-size:13pt}
 #print .pc .cfoot{position:absolute;bottom:14mm;left:0;right:0;font-size:9.5pt;color:#76625f}
 #print .pc .cfoot b{display:block;color:#c9666b;margin-top:1mm}
-#print .pp{padding:14mm 15mm 12mm;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+#print .pp{padding:2mm 15mm 0}
 #print .pp .bh{break-after:avoid;display:flex;justify-content:space-between;align-items:center;font-size:10pt;color:#87925a;font-weight:700;border-bottom:1px dashed #e4d8cb;padding-bottom:2.5mm;margin-bottom:5mm}
 #print .pp .pi+.bh{margin-top:7mm}
 #print .pp .bh b{font:800 13.5pt Tajawal,sans-serif;color:#c9666b}
 #print .pi{background:#fbf8f2;border:1px solid #e4d8cb;border-radius:16px;padding:5mm 6mm 4.5mm;margin:0 0 5mm;box-shadow:none;break-inside:auto;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 #print .pi .ih{break-after:avoid}
+#print .pi.s{break-inside:avoid;page-break-inside:avoid}
 #print .pi .ih h3{font-size:16pt;line-height:1.6}
 #print .pi .pg{font-size:10pt}
 #print .pi .note{margin:7.5mm 0 0;background:#fcefef;padding:7mm 4.5mm 3.5mm;break-before:avoid}
@@ -229,11 +237,11 @@ html{overflow-x:hidden}
 #print .pbar p b{color:#c9666b}
 @media print{
  :root{color-scheme:light}
- html,body{background:#f5f1e8!important;min-height:0!important;height:auto!important}
+ html,body{background:#fff!important;min-height:0!important;height:auto!important}
  body::before{display:none}
  body>*:not(#print){display:none!important}
  #print{display:block;-webkit-print-color-adjust:exact;print-color-adjust:exact;color:#38472f;font-family:Tajawal,sans-serif}
-  #print.ios .pc{height:250mm}
+  #print.ios .pc{height:236mm}
   #print.ios .pc .cfoot{bottom:4mm}
  #print .pbar,#print .pvsp{display:none!important}
  #print .pv{zoom:1!important;width:auto;margin:0}
@@ -302,7 +310,7 @@ function start(){
   $('#go').onclick=()=>{CUR=$('#nm').value.trim();
     $('#go').disabled=true;
     const rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
-    const go=()=>{document.body.classList.remove('closed');openBook();scrollTo(0,0);document.querySelector('.wrap').classList.add('enter')};
+    const go=()=>{document.body.classList.remove('closed');openBook();scrollTo(0,0)};
     if(rm){go();return}
     $('#nb').classList.add('open');
     setTimeout(()=>$('#nbw').classList.add('leave'),2300);
@@ -351,13 +359,29 @@ function openBook(){
   });
   $('#q').addEventListener('input',e=>filter(e.target.value));
   /* search bar starts large, then shrinks and rises once she starts */
-  const tl=$('.tools');tl.classList.add('big');scrollTo(0,0);
-  let lockT=0;
-  const small=()=>{if(!tl.classList.contains('big'))return;tl.classList.remove('big');lockT=Date.now()+750;scrollTo(0,0);setTimeout(()=>fade&&fade(),150);setTimeout(()=>fade&&fade(),760)};
-  const hold=e=>{if(tl.classList.contains('big')){if(e.cancelable)e.preventDefault();small()}else if(Date.now()<lockT&&e.cancelable)e.preventDefault()};
+  /* the search bar first shows alone as a large card (a copy floating over the page);
+     on her first swipe or tap it slides into the real bar while fading: only transform and
+     opacity change, so phones animate it smoothly */
+  const tl=$('.tools');scrollTo(0,0);
+  const hero=document.createElement('div');hero.id='hero';const hc=tl.cloneNode(true);hc.classList.add('big');
+  hc.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));const hq=hc.querySelector('input');
+  hc.style.width=tl.getBoundingClientRect().width+'px';hero.appendChild(hc);document.body.appendChild(hero);document.body.classList.add('intro');
+  let heroOn=true,lockT=0;
+  const small=focusQ=>{if(!heroOn)return;heroOn=false;lockT=Date.now()+1200;scrollTo(0,0);
+    vis.forEach(e=>{e.style.opacity='0'});
+    $('#main').classList.add('reveal');setTimeout(()=>$('#main').classList.remove('reveal'),1600);const a=hc.getBoundingClientRect();document.body.classList.remove('intro');const b=tl.getBoundingClientRect();
+    hc.style.animation='none';hc.style.opacity='1';hc.style.transform='none';void hc.offsetWidth;
+    hc.style.transform='scale(.96)';hc.style.opacity='0';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>fade()));setTimeout(()=>{hero.remove();fade()},1300);
+    if(document.activeElement===hq)hq.blur()};
+  /* she types a title or page number in the big card; once she pauses (or presses search) it fades into the small bar with the results */
+  let hqT=0;hq.addEventListener('input',()=>{$('#q').value=hq.value;filter(hq.value);clearTimeout(hqT);if(hq.value.trim())hqT=setTimeout(small,1100)});
+  hq.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();clearTimeout(hqT);small()}});
+  hc.addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;small();const o=tl.querySelector('.chip[data-b="'+c.dataset.b+'"]');setTimeout(()=>o&&o.click(),350)});
+  const hold=e=>{if(heroOn){if(e.cancelable)e.preventDefault();if(document.activeElement!==hq)small()}else if(Date.now()<lockT&&e.cancelable)e.preventDefault()};
   addEventListener('wheel',hold,{passive:false});addEventListener('touchmove',hold,{passive:false});
-  addEventListener('scroll',()=>{if(scrollY>8)small()},{passive:true});$('#q').addEventListener('focus',small);
-  $('#main').addEventListener('focusin',e=>{if(e.target.tagName==='TEXTAREA'){small();setTimeout(fade,30)}});$('#main').addEventListener('focusout',()=>setTimeout(fade,30));
+  addEventListener('scroll',()=>{if(scrollY>8)small()},{passive:true});
+  $('#main').addEventListener('focusin',e=>{if(e.target.tagName==='TEXTAREA'){setTimeout(fade,30)}});$('#main').addEventListener('focusout',()=>setTimeout(fade,30));
   /* fade cards as they slide under the search bar and behind the save button */
   let fq=0,curEl=null;const T=150,B=130;const fade=()=>{fq=0;if(!$('.tools'))return;const tb=$('.tools').getBoundingClientRect().bottom-10,lb=$('#lq'),bl=(lb&&!lb.hidden)?lb.getBoundingClientRect().top-6:innerHeight;
     vis.forEach(e=>{const r=e.getBoundingClientRect(),a=tb-r.top,b=a+T,d=bl-r.top,c=d-B;
@@ -373,7 +397,7 @@ function openBook(){
     const mid=(top+vb)/2,span=(vb-top)*.42;
     vis.forEach(e=>{if(e.classList.contains('actions'))return;let o=1;
       if(e!==cur){const r=e.getBoundingClientRect(),d=(r.top<=mid&&r.bottom>=mid)?0:Math.min(Math.abs(r.top-mid),Math.abs(r.bottom-mid));
-        const t=Math.min(1,Math.max(0,(d-30)/span)),k=t*t*(3-2*t);const lo=e.classList.contains('book')?.45:e.classList.contains('hit')?.55:.22;o=1-(1-lo)*k}
+        const t=Math.min(1,Math.max(0,(d-30)/span)),k=t*t*(3-2*t);const lo=e.classList.contains('book')? 0.45 : e.classList.contains('hit')? 0.55 : 0.22;o=1-(1-lo)*k}
       e.style.opacity=o.toFixed(3)})};
   const fadeEls=[...document.querySelectorAll('#main .item,#main .book,#main .actions')],vis=new Set();
   const vio=new IntersectionObserver(es=>{es.forEach(en=>en.isIntersecting?vis.add(en.target):(vis.delete(en.target),en.target.classList.remove('fz')));fade()});
@@ -407,10 +431,10 @@ function makePDF(only){
   const ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   let h=`<div class="pbar"><div class="row"><button class="bk" type="button">رجوع</button><button class="go" type="button">${PDFI}حفظ PDF</button></div>
     <p>${ios?'بعدها اضغطي أيقونة المشاركة ⬆︎ ثم <b>«حفظ في الملفات»</b>':'اختاري <b>«حفظ بصيغة PDF»</b> من نافذة الطباعة'}</p></div><div class="pvsp"></div>`;
-  h+='<div class="pbg"><img alt="" src="'+PBG+'"></div><div class="pv">'+cover()+'<div class="pp">';let lastB=-1;
+  h+='<div class="pv">'+cover().replace('<section class="pc">','<section class="pc"><div class="pbg"><img alt="" src="'+PBG+'"></div>')+'<div class="pp">';let lastB=-1;
   ITEMS.forEach(x=>{const v=(notes[x.id]||'').trim();if(!v||(one&&!set.has(x.id)))return;
     if(x.b!==lastB){h+=`<div class="bh"><b>${x.book||'المقدمة'}</b><span>الطريق إلى الربانية</span></div>`;lastB=x.b}
-    h+=`<section class="pi"><div class="ih"><h3>${esc(x.t)}</h3><span class="pg">ص ${AR(x.p)}</span></div><div class="note"><label>شرح الأستاذة سمر الصالح</label><div class="nt">${esc(v)}</div></div></section>`});
+    h+=`<section class="pi${v.length<700?' s':''}"><div class="ih"><h3>${esc(x.t)}</h3><span class="pg">ص ${AR(x.p)}</span></div><div class="note"><label>شرح الأستاذة سمر الصالح</label><div class="nt">${esc(v)}</div></div></section>`});
   h+='</div></div>';
   const pr=$('#print');pr.innerHTML=h;pr.classList.toggle('ios',ios);
   const old=document.title;document.title=one?('شرح لقاء '+day+' – الطريق إلى الربانية'):('شرح الطريق إلى الربانية'+(nm?' – '+nm:''));
