@@ -227,6 +227,10 @@ html{overflow-x:hidden}
 #print.show{display:block;position:relative;z-index:50;color:#38472f;font-family:Tajawal,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 #print .pv{width:210mm;margin:0 auto 40px;zoom:var(--z,1);background:transparent}
 #print .pvsp{height:132px}
+#toast{z-index:80}
+#print .pgs{display:grid;gap:16px;justify-items:center;padding:0 12px 40px}
+#print .pgs img{width:min(100%,620px);height:auto;border-radius:6px;box-shadow:0 10px 30px -14px rgba(90,50,40,.45);background:#fff}
+#print .pbar .go:disabled{opacity:.6}
 #print .pbar{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;flex-direction:column;align-items:center;gap:8px;padding:calc(12px + env(safe-area-inset-top)) 14px 12px;background:rgba(245,241,232,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid #e4d8cb}
 #print .pbar .row{display:flex;gap:10px;align-items:center}
 #print .pbar button{font:800 16px Tajawal,sans-serif;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
@@ -418,38 +422,124 @@ function filter(q){
   DATA.forEach((_,b)=>{document.getElementById('b'+b).style.display=ITEMS.some(x=>x.b===b&&!document.getElementById('i'+x.id).classList.contains('hide'))?'':'none'});
   $('#none').hidden=shown>0;
 }
+/* ---------- PDF made by the page itself (no print dialog): pages drawn on a canvas, saved as images inside a real PDF file ---------- */
+const PX=1240/210,PW=1240,PH=1754;const mm=v=>v*PX;const pt=v=>v*150/72;
+const RTL=s=>'‫'+s+'‬';
+const loadImg=src=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=src});
+function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
+function wrapT(c,text,maxW){const out=[];String(text).split('\n').forEach(par=>{const words=par.split(/\s+/).filter(Boolean);if(!words.length){out.push('');return}
+  let line='';words.forEach(w=>{const t=line?line+' '+w:w;if(c.measureText(t).width<=maxW||!line){line=t}else{out.push(line);line=w}});out.push(line)});return out}
+function txt(c,s,x,y,align){c.textAlign=align||'right';c.fillText(RTL(s),x,y)}
+function pdfGrab(){const g={};
+  try{const src=document.querySelector('.hero .titleimg svg')||document.querySelector('.titleimg svg');const cl=src.cloneNode(true);const o=src.querySelectorAll('path'),n=cl.querySelectorAll('path');
+    o.forEach((p,i)=>{const f=getComputedStyle(p).fill;if(f&&f!=='none')n[i].setAttribute('fill',f)});cl.setAttribute('xmlns','http://www.w3.org/2000/svg');const vb=(cl.getAttribute('viewBox')||'0 0 1200 896').split(' ');cl.setAttribute('width',vb[2]);cl.setAttribute('height',vb[3]);g.title='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(cl.outerHTML)}catch(e){}
+  try{const cs=getComputedStyle(document.querySelector('.bar .logo'));const mi=cs.getPropertyValue('-webkit-mask-image')||cs.getPropertyValue('mask-image')||'';const m=mi.match(/url\(["']?(.*?)["']?\)/);if(m)g.logo=m[1]}catch(e){}
+  return g}
+async function pdfAssets(G){
+  try{await Promise.all(['800 40px Tajawal','700 40px Tajawal','500 40px Tajawal'].map(f=>document.fonts.load(f)))}catch(e){}
+  const A={};A.bg=await loadImg(PBG).catch(()=>null);
+  try{A.title=G.title?await loadImg(G.title):null}catch(e){A.title=null}
+  try{if(G.logo){const im=await loadImg(G.logo);const k=document.createElement('canvas');k.width=im.width;k.height=im.height;const g=k.getContext('2d');g.drawImage(im,0,0);g.globalCompositeOperation='source-in';g.fillStyle='#87925a';g.fillRect(0,0,k.width,k.height);A.logo=k}}catch(e){}
+  return A}
+function drawCover(c,A,meta){
+  c.fillStyle='#f5f1e8';c.fillRect(0,0,PW,PH);
+  if(A.bg){const s=Math.max(PW/A.bg.width,PH/A.bg.height),w=A.bg.width*s,h=A.bg.height*s;c.drawImage(A.bg,(PW-w)/2,(PH-h)/2,w,h)}
+  if(A.logo){const w=mm(12),h=w*A.logo.height/A.logo.width;c.drawImage(A.logo,PW-mm(18)-w,mm(16),w,h)}
+  const tw=mm(100),th=A.title?tw*A.title.height/A.title.width:mm(40);
+  const rows=[['kick',pt(13)*1.6],['title',th],['gap',mm(6)],['auth',pt(13)*1.8],['rule',mm(26)],['by',pt(12)*1.7]];
+  if(meta.name)rows.push(['who',pt(13)*1.8]);if(meta.day)rows.push(['day',pt(12)*1.7]);
+  let y=(PH-rows.reduce((a,r)=>a+r[1],0))/2-mm(8);const cx=PW/2;c.textBaseline='middle';
+  rows.forEach(([k,h])=>{const m=y+h/2;
+    if(k==='kick'){c.font='800 '+pt(13)+'px Tajawal';c.fillStyle='#87925a';txt(c,'دفتر شرح',cx,m,'center')}
+    if(k==='title'){if(A.title)c.drawImage(A.title,cx-tw/2,y,tw,th);else{c.font='800 '+pt(30)+'px Tajawal';c.fillStyle='#c9666b';txt(c,'الطريق إلى الربانية',cx,m,'center')}}
+    if(k==='auth'){c.font='700 '+pt(13)+'px Tajawal';const s='د. مشعل عبدالعزيز الفلاحي',w=c.measureText(s).width;c.fillStyle='rgba(201,102,107,.16)';rr(c,cx-w/2-mm(4),m-pt(13)*.7,w+mm(8),pt(13)*1.4,mm(2));c.fill();c.fillStyle='#5f6a34';txt(c,s,cx,m,'center')}
+    if(k==='rule'){c.save();c.strokeStyle='rgba(201,102,107,.7)';c.lineWidth=3;c.setLineDash([10,8]);c.beginPath();c.moveTo(cx-mm(20),m);c.lineTo(cx+mm(20),m);c.stroke();c.restore()}
+    if(k==='by'){c.font='700 '+pt(12)+'px Tajawal';c.fillStyle='#76625f';txt(c,'شرح أستاذة سمر الصالح',cx,m,'center')}
+    if(k==='who'){c.font='800 '+pt(13)+'px Tajawal';c.fillStyle='#5f6a34';txt(c,'دفتر '+meta.name,cx,m,'center')}
+    if(k==='day'){c.font='700 '+pt(12)+'px Tajawal';c.fillStyle='#c9666b';txt(c,'لقاء '+meta.day,cx,m,'center')}
+    y+=h});
+  c.font='500 '+pt(9.5)+'px Tajawal';c.fillStyle='#76625f';txt(c,'الكتاب: د. مشعل عبدالعزيز الفلاحي – دار القلم',cx,PH-mm(20),'center');
+  c.font='700 '+pt(9.5)+'px Tajawal';c.fillStyle='#c9666b';txt(c,'© شرح كتاب: الطريق إلى الربانية – أستاذة سمر الصالح ٢٠٢٦',cx,PH-mm(14),'center')}
+async function buildPDF(entries,meta,onPage,G){
+  const A=await pdfAssets(G||{});const cv=document.createElement('canvas');cv.width=PW;cv.height=PH;const c=cv.getContext('2d');try{c.direction='rtl'}catch(e){}
+  const jpgs=[];const flush=async()=>{const b=await new Promise(r=>cv.toBlob(r,'image/jpeg',.9));jpgs.push(b);onPage&&onPage(b,jpgs.length)};
+  drawCover(c,A,meta);await flush();
+  const L=mm(15),R=PW-mm(15),TOP=mm(13),BOT=PH-mm(12),W=R-L;
+  const newPage=()=>{c.fillStyle='#fff';c.fillRect(0,0,PW,PH);c.textBaseline='alphabetic'};
+  newPage();let y=TOP,pageUsed=false;
+  const fT=pt(16),lhT=fT*1.55,fN=pt(12.5),lhN=fN*1.85,fP=pt(10),padX=mm(6),padT=mm(5),padB=mm(4.5),nPadX=mm(4.5),nPadT=mm(7),nPadB=mm(3.5),gapNote=mm(7.5);
+  const chipW=t=>{c.font='700 '+fP+'px Tajawal';return c.measureText(t).width+mm(6)};
+  const next=async()=>{await flush();newPage();y=TOP;pageUsed=false};
+  let lastB=-1;
+  for(const e of entries){
+    if(e.b!==lastB){const hh=pt(13.5)*1.5+mm(5)+(pageUsed?mm(7):0);if(y+hh+mm(40)>BOT)await next();if(pageUsed)y+=mm(7);
+      c.textBaseline='middle';c.font='800 '+pt(13.5)+'px Tajawal';c.fillStyle='#c9666b';txt(c,e.book,R,y+pt(13.5)*.75);
+      c.font='700 '+pt(10)+'px Tajawal';c.fillStyle='#87925a';txt(c,'الطريق إلى الربانية',L,y+pt(13.5)*.75,'left');
+      c.save();c.strokeStyle='#e4d8cb';c.lineWidth=2;c.setLineDash([7,6]);c.beginPath();c.moveTo(L,y+pt(13.5)*1.5+mm(2.5));c.lineTo(R,y+pt(13.5)*1.5+mm(2.5));c.stroke();c.restore();
+      y+=pt(13.5)*1.5+mm(5);lastB=e.b;pageUsed=true}
+    const chip='ص '+AR(e.p),cw=chipW(chip);c.font='800 '+fT+'px Tajawal';const tl=wrapT(c,e.t,W-2*padX-cw-mm(4));
+    c.font='500 '+fN+'px Tajawal';let nl=wrapT(c,e.v,W-2*padX-2*nPadX-mm(2));
+    const headH=padT+tl.length*lhT;let first=true;
+    while(nl.length||first){
+      const avail=BOT-y-(first?headH+gapNote:mm(4))-nPadT-nPadB-padB;let fit=Math.max(0,Math.floor(avail/lhN));
+      const fullH=(first?headH+gapNote:mm(4))+nPadT+nl.length*lhN+nPadB+padB;
+      if(first&&fit<Math.min(nl.length,3)&&pageUsed){await next();continue}
+      if(first&&fullH>BOT-y&&fullH<=BOT-TOP&&pageUsed&&e.v.length<700){await next();continue}
+      if(fit<1&&pageUsed){await next();continue}fit=Math.max(1,fit);
+      const part=nl.slice(0,fit);nl=nl.slice(fit);
+      const cardH=(first?headH+gapNote:mm(4))+nPadT+part.length*lhN+nPadB+padB;
+      c.fillStyle='#fbf8f2';rr(c,L,y,W,cardH,mm(4));c.fill();c.strokeStyle='#e4d8cb';c.lineWidth=2;c.stroke();
+      let yy=y;
+      if(first){c.textBaseline='middle';c.font='800 '+fT+'px Tajawal';c.fillStyle='#3d3a33';tl.forEach((s,i)=>txt(c,s,R-padX,yy+padT+lhT*(i+.5)));
+        c.fillStyle='#eef0df';rr(c,L+padX,yy+padT+lhT*.5-fP*.85,cw,fP*1.7,fP*.85);c.fill();c.font='700 '+fP+'px Tajawal';c.fillStyle='#5f6a34';txt(c,chip,L+padX+cw/2,yy+padT+lhT*.5,'center');
+        yy+=headH+gapNote}else yy+=mm(4);
+      const nh=nPadT+part.length*lhN+nPadB;c.fillStyle='#fcefef';rr(c,L+padX,yy,W-2*padX,nh,mm(3));c.fill();c.strokeStyle='#ead3d3';c.lineWidth=2;c.stroke();
+      if(first){c.font='800 '+pt(10.5)+'px Tajawal';const lb='شرح الأستاذة سمر الصالح',lw=c.measureText(lb).width+mm(8);c.fillStyle='#c9666b';rr(c,R-padX-mm(5)-lw,yy-pt(10.5)*.85,lw,pt(10.5)*1.7,pt(10.5)*.85);c.fill();c.fillStyle='#fff';c.textBaseline='middle';txt(c,lb,R-padX-mm(5)-lw/2,yy,'center')}
+      c.textBaseline='middle';c.font='500 '+fN+'px Tajawal';c.fillStyle='#38332d';part.forEach((s,i)=>txt(c,s,R-padX-nPadX-mm(1),yy+nPadT+lhN*(i+.5)));
+      y+=cardH+mm(5);pageUsed=true;first=false;if(nl.length)await next()}
+  }
+  await flush();
+  /* assemble the PDF file */
+  const enc=new TextEncoder(),parts=[],offs=[];let len=0;const put=x=>{const b=typeof x==='string'?enc.encode(x):x;parts.push(b);len+=b.length};
+  const n=jpgs.length,obj=k=>{offs[k]=len;put(k+' 0 obj\n')};
+  put('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+  obj(1);put('<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+  obj(2);put('<< /Type /Pages /Count '+n+' /Kids ['+jpgs.map((_,i)=>(3+3*i)+' 0 R').join(' ')+'] >>\nendobj\n');
+  for(let i=0;i<n;i++){const p=3+3*i,bytes=new Uint8Array(await jpgs[i].arrayBuffer()),cs='q 595.28 0 0 841.89 0 0 cm /Im0 Do Q';
+    obj(p);put('<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Im0 '+(p+2)+' 0 R >> >> /Contents '+(p+1)+' 0 R >>\nendobj\n');
+    obj(p+1);put('<< /Length '+cs.length+' >>\nstream\n'+cs+'\nendstream\nendobj\n');
+    obj(p+2);put('<< /Type /XObject /Subtype /Image /Width '+PW+' /Height '+PH+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+bytes.length+' >>\nstream\n');put(bytes);put('\nendstream\nendobj\n')}
+  const xr=len,total=3+3*n;let x='xref\n0 '+total+'\n0000000000 65535 f \n';for(let k=1;k<total;k++)x+=String(offs[k]).padStart(10,'0')+' 00000 n \n';
+  put(x+'trailer\n<< /Size '+total+' /Root 1 0 R >>\nstartxref\n'+xr+'\n%%EOF');
+  return new Blob(parts,{type:'application/pdf'})}
+
 function makePDF(only){
   const one=Array.isArray(only),set=one?new Set(only):null;
   if(!one&&!Object.values(notes).some(v=>v.trim())){toast('ما كتبتِ شرح بعد');return}
   const day=new Date().toLocaleDateString('ar-EG',{day:'numeric',month:'long',year:'numeric'});
-  const nm=CUR;
-  const T=document.querySelector('.titleimg').outerHTML;
-  const cover=()=>`<section class="pc"><div class="logo"></div><p class="kick">دفتر شرح</p>${T}
-    <div class="tag"><span class="hl"><i></i>د. مشعل عبدالعزيز الفلاحي<i></i></span></div><div class="rule"></div>
-    <p class="by">شرح أستاذة سمر الصالح</p>${nm?`<p class="who">دفتر ${esc(nm)}</p>`:''}${one?`<p class="lqd">لقاء ${day}</p>`:''}
-    <p class="cfoot">الكتاب: د. مشعل عبدالعزيز الفلاحي – دار القلم<b>© شرح كتاب: الطريق إلى الربانية – أستاذة سمر الصالح ٢٠٢٦</b></p></section>`;
+  const entries=[];ITEMS.forEach(x=>{const v=(notes[x.id]||'').trim();if(!v||(one&&!set.has(x.id)))return;entries.push({b:x.b,book:x.book||'المقدمة',t:x.t,p:x.p,v})});
+  const fname=(one?'شرح لقاء '+day:'شرح الطريق إلى الربانية'+(CUR?' - '+CUR:''))+'.pdf';
   const ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-  let h=`<div class="pbar"><div class="row"><button class="bk" type="button">رجوع</button><button class="go" type="button">${PDFI}حفظ PDF</button></div>
-    <p>${ios?'بعدها اضغطي أيقونة المشاركة ⬆︎ ثم <b>«حفظ في الملفات»</b>':'اختاري <b>«حفظ بصيغة PDF»</b> من نافذة الطباعة'}</p></div><div class="pvsp"></div>`;
-  h+='<div class="pv">'+cover().replace('<section class="pc">','<section class="pc"><div class="pbg"><img alt="" src="'+PBG+'"></div>')+'<div class="pp">';let lastB=-1;
-  ITEMS.forEach(x=>{const v=(notes[x.id]||'').trim();if(!v||(one&&!set.has(x.id)))return;
-    if(x.b!==lastB){h+=`<div class="bh"><b>${x.book||'المقدمة'}</b><span>الطريق إلى الربانية</span></div>`;lastB=x.b}
-    h+=`<section class="pi${v.length<700?' s':''}"><div class="ih"><h3>${esc(x.t)}</h3><span class="pg">ص ${AR(x.p)}</span></div><div class="note"><label>شرح الأستاذة سمر الصالح</label><div class="nt">${esc(v)}</div></div></section>`});
-  h+='</div></div>';
-  const pr=$('#print');pr.innerHTML=h;pr.classList.toggle('ios',ios);
-  const old=document.title;document.title=one?('شرح لقاء '+day+' – الطريق إلى الربانية'):('شرح الطريق إلى الربانية'+(nm?' – '+nm:''));
-  /* show the pages as a preview screen; the save button prints straight from the tap */
-  const y=scrollY,out=[...document.body.children].filter(e=>e!==pr&&e.tagName!=='SCRIPT');
+  const G=pdfGrab();const pr=$('#print');
+  pr.innerHTML=`<div class="pbar"><div class="row"><button class="bk" type="button">رجوع</button><button class="go" type="button" disabled>${PDFI}<span>جاري التجهيز…</span></button></div>
+    <p>${ios?'اضغطي «حفظ PDF» ثم اختاري <b>«حفظ في الملفات»</b>':'يُحفظ الملف في مجلد <b>التنزيلات</b>'}</p></div><div class="pvsp"></div><div class="pgs"></div>`;
+  const y=scrollY,out=[...document.body.children].filter(e=>e!==pr&&e.id!=='toast'&&e.tagName!=='SCRIPT');
   out.forEach(e=>{e.__ph=document.createComment('');e.replaceWith(e.__ph)});
-  const fit=()=>pr.style.setProperty('--z',Math.min(1,(innerWidth-16)/793.7).toFixed(4));fit();addEventListener('resize',fit);
   pr.classList.add('show');scrollTo(0,0);
-  let open=true;try{history.scrollRestoration='manual';history.pushState({pv:1},'')}catch(e){}
-  const close=fromPop=>{if(!open)return;open=false;removeEventListener('popstate',onPop);removeEventListener('resize',fit);
-    out.forEach(e=>{e.querySelectorAll&&e.querySelectorAll('.enter').forEach(x=>x.classList.remove('enter'));e.classList&&e.classList.remove('enter');e.__ph.replaceWith(e)});pr.classList.remove('show');pr.innerHTML='';document.title=old;scrollTo(0,y);requestAnimationFrame(()=>scrollTo(0,y));setTimeout(()=>scrollTo(0,y),60);
+  const urls=[];let file=null,open=true;
+  const go=pr.querySelector('.go'),pgs=pr.querySelector('.pgs');
+  buildPDF(entries,{name:CUR,day:one?day:''},(b)=>{if(!open)return;const u=URL.createObjectURL(b);urls.push(u);const im=new Image();im.src=u;im.alt='';pgs.appendChild(im)},G)
+    .then(blob=>{if(!open)return;file=new File([blob],fname,{type:'application/pdf'});go.disabled=false;go.querySelector('span').textContent='حفظ PDF'})
+    .catch(()=>{go.querySelector('span').textContent='تعذّر التجهيز';toast('صار خطأ، جربي مرة ثانية')});
+  try{history.scrollRestoration='manual';history.pushState({pv:1},'')}catch(e){}
+  const close=fromPop=>{if(!open)return;open=false;removeEventListener('popstate',onPop);
+    out.forEach(e=>e.__ph.replaceWith(e));pr.classList.remove('show');pr.innerHTML='';urls.forEach(u=>URL.revokeObjectURL(u));scrollTo(0,y);requestAnimationFrame(()=>scrollTo(0,y));setTimeout(()=>scrollTo(0,y),60);
     if(!fromPop){try{if(history.state&&history.state.pv)history.back()}catch(e){}}};
   const onPop=()=>close(true);addEventListener('popstate',onPop);
   pr.querySelector('.bk').onclick=()=>close(false);
-  pr.querySelector('.go').onclick=()=>window.print();
+  go.onclick=async()=>{if(!file)return;
+    if(navigator.canShare&&navigator.canShare({files:[file]})&&(ios||/Android/.test(navigator.userAgent))){try{await navigator.share({files:[file],title:fname});return}catch(e){if(e&&e.name==='AbortError')return}}
+    const u=URL.createObjectURL(file),a=document.createElement('a');a.href=u;a.download=fname;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast('تم حفظ الملف')};
 }
 start();
 }
