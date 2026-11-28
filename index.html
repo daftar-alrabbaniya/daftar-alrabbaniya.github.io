@@ -226,11 +226,15 @@ html{overflow-x:hidden}
 /* PDF preview screen (same pages, shown before saving) */
 #print.show{display:block;position:relative;z-index:50;color:#38472f;font-family:Tajawal,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 #print .pv{width:210mm;margin:0 auto 40px;zoom:var(--z,1);background:transparent}
-#print .pvsp{height:132px}
+#print .pvsp{height:178px}
 #toast{z-index:80}
 #print .pgs{display:grid;gap:16px;justify-items:center;padding:0 12px 40px}
 #print .pgs img{width:min(100%,620px);height:auto;border-radius:6px;box-shadow:0 10px 30px -14px rgba(90,50,40,.45);background:#fff}
 #print .pbar .go:disabled{opacity:.6}
+#print .pbar .fn{display:flex;align-items:center;gap:8px;width:min(100%,420px);font:700 13px Tajawal,sans-serif;color:#76625f}
+#print .pbar .fn span{white-space:nowrap}
+#print .pbar .fn input{flex:1;min-width:0;font:600 16px Tajawal,sans-serif;color:#38472f;background:#fffdf9;border:1px solid #e4d8cb;border-radius:12px;padding:9px 12px 7px;outline:none}
+#print .pbar .fn input:focus{border-color:#c9666b;box-shadow:0 0 0 3px rgba(201,102,107,.15)}
 #print .pbar{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;flex-direction:column;align-items:center;gap:8px;padding:calc(12px + env(safe-area-inset-top)) 14px 12px;background:rgba(245,241,232,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid #e4d8cb}
 #print .pbar .row{display:flex;gap:10px;align-items:center}
 #print .pbar button{font:800 16px Tajawal,sans-serif;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
@@ -518,18 +522,19 @@ function makePDF(only){
   if(!one&&!Object.values(notes).some(v=>v.trim())){toast('ما كتبتِ شرح بعد');return}
   const day=new Date().toLocaleDateString('ar-EG',{day:'numeric',month:'long',year:'numeric'});
   const entries=[];ITEMS.forEach(x=>{const v=(notes[x.id]||'').trim();if(!v||(one&&!set.has(x.id)))return;entries.push({b:x.b,book:x.book||'المقدمة',t:x.t,p:x.p,v})});
-  const fname=(one?'شرح لقاء '+day:'شرح الطريق إلى الربانية'+(CUR?' - '+CUR:''))+'.pdf';
+  const fname0=one?'شرح لقاء '+day:'شرح الطريق إلى الربانية'+(CUR?' - '+CUR:'');
   const ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   const G=pdfGrab();const pr=$('#print');
   pr.innerHTML=`<div class="pbar"><div class="row"><button class="bk" type="button">رجوع</button><button class="go" type="button" disabled>${PDFI}<span>جاري التجهيز…</span></button></div>
+    <label class="fn"><span>اسم الملف</span><input type="text" dir="rtl" enterkeyhint="done" autocomplete="off" value="${esc(fname0)}"></label>
     <p>${ios?'اضغطي «حفظ PDF» ثم اختاري <b>«حفظ في الملفات»</b>':'يُحفظ الملف في مجلد <b>التنزيلات</b>'}</p></div><div class="pvsp"></div><div class="pgs"></div>`;
   const y=scrollY,out=[...document.body.children].filter(e=>e!==pr&&e.id!=='toast'&&e.tagName!=='SCRIPT');
   out.forEach(e=>{e.__ph=document.createComment('');e.replaceWith(e.__ph)});
   pr.classList.add('show');scrollTo(0,0);
-  const urls=[];let file=null,open=true;
+  const urls=[];let pdfBlob=null,open=true;
   const go=pr.querySelector('.go'),pgs=pr.querySelector('.pgs');
   buildPDF(entries,{name:CUR,day:one?day:''},(b)=>{if(!open)return;const u=URL.createObjectURL(b);urls.push(u);const im=new Image();im.src=u;im.alt='';pgs.appendChild(im)},G)
-    .then(blob=>{if(!open)return;file=new File([blob],fname,{type:'application/pdf'});go.disabled=false;go.querySelector('span').textContent='حفظ PDF'})
+    .then(blob=>{if(!open)return;pdfBlob=blob;go.disabled=false;go.querySelector('span').textContent='حفظ PDF'})
     .catch(()=>{go.querySelector('span').textContent='تعذّر التجهيز';toast('صار خطأ، جربي مرة ثانية')});
   try{history.scrollRestoration='manual';history.pushState({pv:1},'')}catch(e){}
   const close=fromPop=>{if(!open)return;open=false;removeEventListener('popstate',onPop);
@@ -537,7 +542,9 @@ function makePDF(only){
     if(!fromPop){try{if(history.state&&history.state.pv)history.back()}catch(e){}}};
   const onPop=()=>close(true);addEventListener('popstate',onPop);
   pr.querySelector('.bk').onclick=()=>close(false);
-  go.onclick=async()=>{if(!file)return;
+  const fin=pr.querySelector('.fn input');fin.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();fin.blur()}});
+  go.onclick=async()=>{if(!pdfBlob)return;
+    const fname=(fin.value.replace(/[\\/:*?"<>|]+/g,' ').replace(/\.pdf$/i,'').trim()||fname0)+'.pdf';const file=new File([pdfBlob],fname,{type:'application/pdf'});
     if(navigator.canShare&&navigator.canShare({files:[file]})&&(ios||/Android/.test(navigator.userAgent))){try{await navigator.share({files:[file],title:fname});return}catch(e){if(e&&e.name==='AbortError')return}}
     const u=URL.createObjectURL(file),a=document.createElement('a');a.href=u;a.download=fname;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast('تم حفظ الملف')};
 }
